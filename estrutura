@@ -1,0 +1,10 @@
+/lib
+  /models
+    - planet.dart
+  /screens
+    - home_screen.dart
+    - add_edit_planet_screen.dart
+    - planet_detail_screen.dart
+  /services
+    - database_helper.dart
+  - main.dart
