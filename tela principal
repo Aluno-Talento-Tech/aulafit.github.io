@@ -1,0 +1,60 @@
+import 'package:flutter/material.dart';
+import 'package:your_project/screens/add_edit_planet_screen.dart';
+import 'package:your_project/screens/planet_detail_screen.dart';
+import 'package:your_project/services/database_helper.dart';
+import 'package:your_project/models/planet.dart';
+
+class HomeScreen extends StatefulWidget {
+  @override
+  _HomeScreenState createState() => _HomeScreenState();
+}
+
+class _HomeScreenState extends State<HomeScreen> {
+  List<Planet> _planets = [];
+
+  @override
+  void initState() {
+    super.initState();
+    _fetchPlanets();
+  }
+
+  void _fetchPlanets() async {
+    List<Planet> planets = await DatabaseHelper.instance.getPlanets();
+    setState(() {
+      _planets = planets;
+    });
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    return Scaffold(
+      appBar: AppBar(
+        title: Text('Planets'),
+      ),
+      body: ListView.builder(
+        itemCount: _planets.length,
+        itemBuilder: (context, index) {
+          return ListTile(
+            title: Text(_planets[index].name),
+            subtitle: Text(_planets[index].nickname ?? ''),
+            onTap: () => Navigator.push(
+              context,
+              MaterialPageRoute(
+                builder: (context) => PlanetDetailScreen(planet: _planets[index]),
+              ),
+            ),
+          );
+        },
+      ),
+      floatingActionButton: FloatingActionButton(
+        onPressed: () => Navigator.push(
+          context,
+          MaterialPageRoute(
+            builder: (context) => AddEditPlanetScreen(),
+          ),
+        ).then((value) => _fetchPlanets()),
+        child: Icon(Icons.add),
+      ),
+    );
+  }
+}
