@@ -1,0 +1,103 @@
+import 'package:flutter/material.dart';
+import 'package:your_project/services/database_helper.dart';
+import 'package:your_project/models/planet.dart';
+
+class AddEditPlanetScreen extends StatefulWidget {
+  final Planet planet;
+
+  AddEditPlanetScreen({this.planet});
+
+  @override
+  _AddEditPlanetScreenState createState() => _AddEditPlanetScreenState();
+}
+
+class _AddEditPlanetScreenState extends State<AddEditPlanetScreen> {
+  final _formKey = GlobalKey<FormState>();
+  String _name;
+  double _distanceFromSun;
+  double _size;
+  String _nickname;
+
+  @override
+  Widget build(BuildContext context) {
+    return Scaffold(
+      appBar: AppBar(
+        title: Text(widget.planet == null ? 'Add Planet' : 'Edit Planet'),
+      ),
+      body: Form(
+        key: _formKey,
+        child: Padding(
+          padding: const EdgeInsets.all(16.0),
+          child: Column(
+            children: <Widget>[
+              TextFormField(
+                initialValue: widget.planet?.name ?? '',
+                decoration: InputDecoration(labelText: 'Name'),
+                validator: (value) {
+                  if (value.isEmpty) {
+                    return 'Please enter a name';
+                  }
+                  return null;
+                },
+                onSaved: (value) => _name = value,
+              ),
+              TextFormField(
+                initialValue: widget.planet?.distanceFromSun?.toString() ?? '',
+                decoration: InputDecoration(labelText: 'Distance from Sun (AU)'),
+                validator: (value) {
+                  if (value.isEmpty || double.tryParse(value) == null || double.parse(value) <= 0) {
+                    return 'Please enter a valid distance';
+                  }
+                  return null;
+                },
+                onSaved: (value) => _distanceFromSun = double.parse(value),
+              ),
+              TextFormField(
+                initialValue: widget.planet?.size?.toString() ?? '',
+                decoration: InputDecoration(labelText: 'Size (km)'),
+                validator: (value) {
+                  if (value.isEmpty || double.tryParse(value) == null || double.parse(value) <= 0) {
+                    return 'Please enter a valid size';
+                  }
+                  return null;
+                },
+                onSaved: (value) => _size = double.parse(value),
+              ),
+              TextFormField(
+                initialValue: widget.planet?.nickname ?? '',
+                decoration: InputDecoration(labelText: 'Nickname (Optional)'),
+                onSaved: (value) => _nickname = value,
+              ),
+              SizedBox(height: 20),
+              ElevatedButton(
+                onPressed: _submit,
+                child: Text(widget.planet == null ? 'Add' : 'Update'),
+              ),
+            ],
+          ),
+        ),
+      ),
+    );
+  }
+
+  void _submit() async {
+    if (_formKey.currentState.validate()) {
+      _formKey.currentState.save();
+      Planet newPlanet = Planet(
+        id: widget.planet?.id,
+        name: _name,
+        distanceFromSun: _distanceFromSun,
+        size: _size,
+        nickname: _nickname,
+      );
+
+      if (widget.planet == null) {
+        await DatabaseHelper.instance.insertPlanet(newPlanet);
+      } else {
+        await DatabaseHelper.instance.updatePlanet(newPlanet);
+      }
+
+      Navigator.pop(context, true);
+    }
+  }
+}
